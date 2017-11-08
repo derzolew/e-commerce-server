@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/image")
@@ -33,5 +34,11 @@ public class ImageController {
         }
         ImageDto result = imageService.saveImage(image);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping(value = "all")
+    public ResponseEntity<List<ImageDto>> getAllImages() {
+        List<ImageDto> imageDtoList = imageService.getImages();
+        return ResponseEntity.ok(imageDtoList);
     }
 }
