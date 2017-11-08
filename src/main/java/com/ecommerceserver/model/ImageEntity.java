@@ -74,17 +74,4 @@ public class ImageEntity implements Serializable
         this.originalFileName = originalFileName;
     }
 
-    @Column(name = "reduced_image_file_name", nullable = false)
-    public String getReducedFileName()
-    {
-        return reducedFileName;
-    }
-
-    public void setReducedFileName(String reducedFileName)
-    {
-        this.reducedFileName = reducedFileName;
-    }
-
-
-
 }

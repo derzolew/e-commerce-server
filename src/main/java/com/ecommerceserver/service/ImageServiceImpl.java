@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.List;
 
 @Service("imageService")
 public class ImageServiceImpl implements ImageService {
@@ -32,6 +33,12 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public org.springframework.core.io.Resource getFullImageAsResource(String fileName) {
+        return null;
+    }
+
+    @Override
+    public List<ImageDto> getImages() {
+
         return null;
     }
 }
