@@ -19,17 +19,14 @@ public class ImageController {
     private ImageServiceImpl imageService;
 
     @GetMapping(value = "/{imageName:.+}", produces = "image/jpeg")
-    public ResponseEntity<org.springframework.core.io.Resource> getImage(@PathVariable String imageName)
-    {
+    public ResponseEntity<org.springframework.core.io.Resource> getImage(@PathVariable String imageName) {
         org.springframework.core.io.Resource file = this.imageService.getFullImageAsResource(imageName);
         return ResponseEntity.ok(file);
     }
 
     @PostMapping(produces = "application/json")
-    public ResponseEntity<ImageDto> uploadImage(@RequestParam("image") MultipartFile image) throws IOException, BadImageSizeException, InterruptedException
-    {
-        if (image == null || !imageService.isImage(image))
-        {
+    public ResponseEntity<ImageDto> uploadImage(@RequestParam("image") MultipartFile image) throws IOException, BadImageSizeException, InterruptedException {
+        if (image == null || !imageService.isImage(image)) {
             return ResponseEntity.badRequest().build();
         }
         ImageDto result = imageService.saveImage(image);
@@ -40,5 +37,16 @@ public class ImageController {
     public ResponseEntity<List<ImageDto>> getAllImages() {
         List<ImageDto> imageDtoList = imageService.getImages();
         return ResponseEntity.ok(imageDtoList);
+    }
+
+    @PutMapping(value = "/delete/{imageName:.+}")
+    public ResponseEntity deleteImage(@PathVariable String imageName) {
+        try {
+            imageService.deleteImage(imageName);
+            return ResponseEntity.ok(imageName);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+
     }
 }

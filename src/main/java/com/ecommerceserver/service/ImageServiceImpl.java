@@ -117,6 +117,11 @@ public class ImageServiceImpl implements ImageService {
         return StreamSupport.stream(imageEntities.spliterator(), false).map(entity -> conversionService.convert(entity, ImageDto.class)).collect(Collectors.toList());
     }
 
+    public void deleteImage(String imageName) {
+        ImageEntity imageEntity = imageRepository.findOneByPublicFileName(imageName);
+        imageRepository.delete(imageEntity);
+    }
+
     private ImageEntity saveImageInformation(String directory, String fileName) {
         ImageEntity imageEntity = new ImageEntity();
         StorageEntity storage = getOrCreateCurrentStorage();
