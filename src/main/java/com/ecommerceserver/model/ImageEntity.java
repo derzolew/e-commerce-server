@@ -12,9 +12,7 @@ public class ImageEntity implements Serializable
     private StorageEntity storage;
     private String directory;
     private String originalFileName;
-    private String reducedFileName;
     private String publicFileName;
-
 
     @Id
     @Column(name = "id", nullable = false, unique = true)
