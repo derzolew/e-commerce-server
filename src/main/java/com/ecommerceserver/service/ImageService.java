@@ -1,7 +1,19 @@
 package com.ecommerceserver.service;
 
-import org.springframework.stereotype.Service;
+import com.ecommerceserver.service.dto.ImageDto;
+import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
 
-@Service("imageService")
-public class ImageService {
+import java.io.IOException;
+
+public interface ImageService {
+
+    ImageDto saveImage(MultipartFile file) throws IOException;
+
+    boolean isImage(MultipartFile file);
+
+    Resource getImageAsResource(String fileName);
+
+    Resource getFullImageAsResource(String fileName);
+
 }
