@@ -9,6 +9,7 @@ import com.ecommerceserver.service.exception.BadImageSizeException;
 import com.ecommerceserver.service.utils.RandomStringGenerator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.io.FileSystemResource;
@@ -20,7 +21,8 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.validation.Valid;
-import java.awt.image.BufferedImage;
+import java.awt.*;
+import java.awt.image.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +41,9 @@ public class ImageServiceImpl implements ImageService {
     private static final int PUBLIC_IMAGE_NAME_LENGTH = 12;
     public static final int MIN_IMAGE_HEIGHT = 350;
     public static final int MIN_IMAGE_WIDTH = 500;
+    private static final int[] RGB_MASKS = {0xFF0000, 0xFF00, 0xFF};
+    private static final ColorModel RGB_OPAQUE = new DirectColorModel(32, RGB_MASKS[0], RGB_MASKS[1], RGB_MASKS[2]);
+    private static final String PNG = "png";
     private Logger logger;
     @Resource(name = "imageRepository")
     private ImageRepository imageRepository;
@@ -66,7 +71,7 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public ImageDto saveImage(MultipartFile file) throws IOException, BadImageSizeException {
+    public ImageDto saveImage(MultipartFile file) throws IOException, BadImageSizeException, InterruptedException {
         Path uploadPath = Paths.get(uploadDirectoryPath);
         if (Files.exists(uploadPath) && Files.isDirectory(uploadPath) && Files.isWritable(uploadPath)) {
             if (!checkDimensions(file)) {
@@ -79,6 +84,7 @@ public class ImageServiceImpl implements ImageService {
                 logger.fatal("Upload directory path, described IN application.properties is not writable! Please, check is this folder exists: " + uploadDirectoryPath);
                 throw new IOException("Upload directory is not writable!");
             }
+            String originalFileName = createReducedImage(uploadDirectoryPath, Paths.get(directory, fileFolder).toString(), file);
             ImageEntity imageEntity = saveImageInformation(Paths.get(directory, fileFolder).toString(), file.getName().toString());
             return conversionService.convert(imageEntity, ImageDto.class);
         } else {
@@ -151,4 +157,34 @@ public class ImageServiceImpl implements ImageService {
         }
         return !(sourceImage.getHeight() < MIN_IMAGE_HEIGHT || sourceImage.getWidth() < MIN_IMAGE_WIDTH);
     }
+
+    private String createReducedImage(String uploadBaseDirectory, String directory, MultipartFile originalFile) throws IOException, InterruptedException {
+        File fileForWrite = Paths.get(uploadBaseDirectory, directory, originalFile.getName().toString()).toFile();
+        BufferedImage sourceImage = ImageIO.read(new ByteArrayInputStream(originalFile.getBytes()));
+        if (isPng(originalFile)) {
+            sourceImage = bufferedImageForPng(originalFile);
+        }
+        File outputFile = Paths.get(uploadBaseDirectory, directory, originalFile.getName().toString()).toFile();
+        if (ImageIO.write(sourceImage, "jpeg", outputFile)) {
+            return originalFile.getName().toString();
+        } else {
+            throw new IOException("Could not write preview file to " + outputFile.toString());
+        }
+    }
+
+
+    private boolean isPng(MultipartFile originalFile) {
+        return originalFile.getContentType().contains(PNG);
+    }
+
+    private BufferedImage bufferedImageForPng(MultipartFile originalFile) throws InterruptedException, IOException {
+        Image img = Toolkit.getDefaultToolkit().createImage(originalFile.getBytes());
+        PixelGrabber pg = new PixelGrabber(img, 0, 0, -1, -1, true);
+        pg.grabPixels();
+        int width = pg.getWidth(), height = pg.getHeight();
+        DataBuffer buffer = new DataBufferInt((int[]) pg.getPixels(), pg.getWidth() * pg.getHeight());
+        WritableRaster raster = Raster.createPackedRaster(buffer, width, height, width, RGB_MASKS, null);
+        return new BufferedImage(RGB_OPAQUE, raster, false, null);
+    }
+
 }

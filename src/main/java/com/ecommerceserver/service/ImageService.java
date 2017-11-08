@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ImageService {
 
-    ImageDto saveImage(MultipartFile file) throws IOException, BadImageSizeException;
+    ImageDto saveImage(MultipartFile file) throws IOException, BadImageSizeException, InterruptedException;
 
     boolean isImage(MultipartFile file);
 
