@@ -30,6 +30,8 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service("imageService")
 public class ImageServiceImpl implements ImageService {
@@ -103,6 +105,12 @@ public class ImageServiceImpl implements ImageService {
         return resource;
     }
 
+    @Override
+    public List<ImageDto> getImages() {
+        Iterable<ImageEntity> imageEntities = imageRepository.findAll();
+        return StreamSupport.stream(imageEntities.spliterator(), false).map(entity -> conversionService.convert(entity, ImageDto.class)).collect(Collectors.toList());
+    }
+
     private ImageEntity saveImageInformation(String directory, String fileName) {
         ImageEntity imageEntity = new ImageEntity();
         StorageEntity storage = getOrCreateCurrentStorage();
@@ -142,11 +150,5 @@ public class ImageServiceImpl implements ImageService {
             return false;
         }
         return !(sourceImage.getHeight() < MIN_IMAGE_HEIGHT || sourceImage.getWidth() < MIN_IMAGE_WIDTH);
-    }
-
-    @Override
-    public List<ImageDto> getImages() {
-
-        return null;
     }
 }
