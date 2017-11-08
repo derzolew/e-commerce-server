@@ -25,7 +25,7 @@ public class ImageController {
         return ResponseEntity.ok(file);
     }
 
-    @PostMapping(value = "/image", produces = "application/json")
+    @PostMapping(produces = "application/json")
     public ResponseEntity<ImageDto> uploadImage(@RequestParam("image") MultipartFile image) throws IOException, BadImageSizeException, InterruptedException
     {
         if (image == null || !imageService.isImage(image))

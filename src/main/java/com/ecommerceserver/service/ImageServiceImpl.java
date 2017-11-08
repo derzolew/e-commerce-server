@@ -13,14 +13,12 @@ import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
-import javax.validation.Valid;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.ByteArrayInputStream;
@@ -41,6 +39,8 @@ public class ImageServiceImpl implements ImageService {
     private static final int PUBLIC_IMAGE_NAME_LENGTH = 12;
     public static final int MIN_IMAGE_HEIGHT = 350;
     public static final int MIN_IMAGE_WIDTH = 500;
+    private static final String ORIGINAL_FILE_NAME = "orig.jpg";
+    public static final int ORIGINAL_FILE_HEIGHT = 1500;
     private static final int[] RGB_MASKS = {0xFF0000, 0xFF00, 0xFF};
     private static final ColorModel RGB_OPAQUE = new DirectColorModel(32, RGB_MASKS[0], RGB_MASKS[1], RGB_MASKS[2]);
     private static final String PNG = "png";
@@ -84,9 +84,9 @@ public class ImageServiceImpl implements ImageService {
                 logger.fatal("Upload directory path, described IN application.properties is not writable! Please, check is this folder exists: " + uploadDirectoryPath);
                 throw new IOException("Upload directory is not writable!");
             }
-            String originalFileName = createReducedImage(uploadDirectoryPath, Paths.get(directory, fileFolder).toString(), file);
-            ImageEntity imageEntity = saveImageInformation(Paths.get(directory, fileFolder).toString(), file.getName().toString());
-            return conversionService.convert(imageEntity, ImageDto.class);
+            String originalFileName = createReducedImage(uploadDirectoryPath, Paths.get(directory, fileFolder).toString(), file, ORIGINAL_FILE_NAME, ORIGINAL_FILE_HEIGHT);
+            ImageEntity entity = saveImageInformation(Paths.get(directory, fileFolder).toString(), originalFileName);
+            return conversionService.convert(entity, ImageDto.class);
         } else {
             logger.fatal("Upload directory path, described IN application.properties is not writable! Please, check is this folder exists: " + uploadDirectoryPath);
             throw new IOException("Upload directory is not writable!");
@@ -158,17 +158,27 @@ public class ImageServiceImpl implements ImageService {
         return !(sourceImage.getHeight() < MIN_IMAGE_HEIGHT || sourceImage.getWidth() < MIN_IMAGE_WIDTH);
     }
 
-    private String createReducedImage(String uploadBaseDirectory, String directory, MultipartFile originalFile) throws IOException, InterruptedException {
-        File fileForWrite = Paths.get(uploadBaseDirectory, directory, originalFile.getName().toString()).toFile();
+    private String createReducedImage(String uploadBaseDirectory, String directory, MultipartFile originalFile, String newFilename, int targetHeight) throws IOException, InterruptedException {
+        File fileForWrite = Paths.get(uploadBaseDirectory, directory, newFilename).toFile();
         BufferedImage sourceImage = ImageIO.read(new ByteArrayInputStream(originalFile.getBytes()));
         if (isPng(originalFile)) {
             sourceImage = bufferedImageForPng(originalFile);
         }
-        File outputFile = Paths.get(uploadBaseDirectory, directory, originalFile.getName().toString()).toFile();
-        if (ImageIO.write(sourceImage, "jpeg", outputFile)) {
-            return originalFile.getName().toString();
+
+        if (sourceImage.getHeight() < targetHeight) {
+            if (ImageIO.write(sourceImage, "jpeg", fileForWrite)) {
+                return newFilename;
+            } else {
+                throw new IOException("Could not write preview file to " + fileForWrite.toString());
+            }
         } else {
-            throw new IOException("Could not write preview file to " + outputFile.toString());
+            BufferedImage resizedImage = Scalr.resize(sourceImage, Scalr.Method.BALANCED, Scalr.Mode.FIT_TO_HEIGHT, targetHeight);
+            File outputFile = Paths.get(uploadBaseDirectory, directory, newFilename).toFile();
+            if (ImageIO.write(resizedImage, "jpeg", outputFile)) {
+                return newFilename;
+            } else {
+                throw new IOException("Could not write preview file to " + outputFile.toString());
+            }
         }
     }
 
