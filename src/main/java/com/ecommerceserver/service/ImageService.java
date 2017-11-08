@@ -14,8 +14,6 @@ public interface ImageService {
 
     boolean isImage(MultipartFile file);
 
-    Resource getImageAsResource(String fileName);
-
     Resource getFullImageAsResource(String fileName);
 
     List<ImageDto> getImages();

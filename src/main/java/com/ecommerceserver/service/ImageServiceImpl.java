@@ -96,14 +96,6 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public org.springframework.core.io.Resource getImageAsResource(String fileName) {
-        ImageEntity imageEntity = imageRepository.findOneByPublicFileName(fileName);
-        File imageFile = Paths.get(imageEntity.getStorage().getPath(), imageEntity.getDirectory(), imageEntity.getReducedFileName()).toFile();
-        org.springframework.core.io.Resource resource = new FileSystemResource(imageFile);
-        return resource;
-    }
-
-    @Override
     public org.springframework.core.io.Resource getFullImageAsResource(String fileName) {
         ImageEntity imageEntity = imageRepository.findOneByPublicFileName(fileName);
         File imageFile = Paths.get(imageEntity.getStorage().getPath(), imageEntity.getDirectory(), imageEntity.getOriginalFileName()).toFile();
