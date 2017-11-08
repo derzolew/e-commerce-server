@@ -1,4 +1,9 @@
 package com.ecommerceserver.repository;
 
-/*public class ImageRepository implements JpaRepository<<?>, Long> {
-}*/
+import com.ecommerceserver.model.ImageEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface ImageRepository extends JpaRepository<ImageEntity, Long> {
+}

@@ -1,17 +1,20 @@
 package com.ecommerceserver.model;
 
+
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "image", schema = "public")
-public class ImageEntity {
-
+public class ImageEntity implements Serializable
+{
     private Long id;
     private StorageEntity storage;
     private String directory;
     private String originalFileName;
     private String reducedFileName;
     private String publicFileName;
+
 
     @Id
     @Column(name = "id", nullable = false, unique = true)
@@ -81,5 +84,7 @@ public class ImageEntity {
     {
         this.reducedFileName = reducedFileName;
     }
+
+
 
 }

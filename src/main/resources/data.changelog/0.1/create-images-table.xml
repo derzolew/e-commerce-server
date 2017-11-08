@@ -1,0 +1,36 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="create-images-table" author="m.vilcheuski">
+        <createTable tableName="image" schemaName="public">
+            <column name="id" autoIncrement="true" type="bigint">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="fk_storage_id" type="bigint">
+                <constraints foreignKeyName="image_to_storage" referencedTableName="storage"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="directory" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+            <column name="original_image_file_name" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reduced_image_file_name" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+            <column name="public_file_name" type="varchar(40)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-index-for-filename" author="m.vilcheuski">
+        <createIndex tableName="image" indexName="public_name_index">
+            <column name="public_file_name"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

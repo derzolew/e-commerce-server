@@ -4,10 +4,11 @@ package com.ecommerceserver.model;
 import javax.persistence.*;
 import java.io.Serializable;
 
+
 @Entity
 @Table(name = "storage", schema = "public")
-public class StorageEntity implements Serializable {
-
+public class StorageEntity implements Serializable
+{
     private Long id;
     private String path;
 
